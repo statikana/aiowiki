@@ -1,16 +1,13 @@
 import asyncio
-from aiowiki.client import WikiClient
-from env import *
+import aiowiki
+from env import PROXY
 
-data = {
-    "access_token": WIKIMEDIA_ACCESS_TOKEN,
-    "app": "AIOWiki Test (contact@statikana.dev)"
-}
 
 async def main():
-    wiki = WikiClient(**data)
-    print(wiki.session.headers)
-    print(await wiki.search_page("Earth", limit=3))
+    wiki = aiowiki.WikiClient(project=aiowiki.Project.WIKIPEDIA, proxy=PROXY)
+    results = await wiki.core.search_content("Python", limit=5)
+    for r in results:
+        print(r.title)
 
 
 if __name__ == "__main__":
