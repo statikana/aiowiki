@@ -15,11 +15,33 @@ class Project(Enum):
 
 class EventType(Enum):
     ALL = "all"
-    CURATED = "selected"
+    SELECTED = "selected"
     BIRTHS = "births"
     DEATHS = "deaths"
     HOLIDAYS = "holidays"
     EVENTS = "events"
+
+
+class ArticleURLs(Enum):
+    DESKTOP = "desktop"
+    MOBILE = "mobile"
+
+
+
+class LanguageDirection(Enum):
+    LTR = "ltr"
+    RTL = "rtl"
+
+
+class ArticleType(Enum):
+    STANDARD = "standard"
+    "Encyclopedia article"
+    DISAMBIGUATION = "disambiguation"
+    "Page that links to articles covering topics with similar titles"
+    NO_EXTRACT = "no-extract"
+    "Articles without an extract"
+    MAINPAGE = "mainpage"
+    "A wiki's homepage"
 
 
 class Language(Enum):
