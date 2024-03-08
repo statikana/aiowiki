@@ -60,13 +60,6 @@ class SearchPageResult(JSONSerializeable):
     thumbnail: Optional["Thumbnail"] = None
     "Reduced-size version of the page's lead image or None if no lead image exists"
 
-    @classmethod
-    def from_json(cls, data: dict):
-        return cls(
-            thumbnail=Thumbnail.from_json(thumb) if (thumb := data.pop("thumbnail")) else None,
-            **data
-        )
-
 
 class Thumbnail(JSONSerializeable):
     mimetype: str
@@ -81,13 +74,6 @@ class Thumbnail(JSONSerializeable):
     "The height of the image or video in pixels, or None if unknown"
     duration: Optional[int] = None
     "The duration of the video in seconds, or None if the media is an image"
-
-    @classmethod
-    def from_json(cls, data: dict):
-        return cls(
-            url=f"https:{data.pop('url')}",
-            **data
-        )
 
 
 class MostReadArticle(JSONSerializeable):
@@ -134,21 +120,6 @@ class MostReadArticle(JSONSerializeable):
     extract_html: str
     "First several sentences of the article in simplified HTML"
 
-    @classmethod
-    def from_json(cls, data: dict):
-        return cls(
-            view_history=[ViewShapshot.from_json(snap) for snap in data.pop("view_history")],
-            type=ArticleType(data.pop("type")),
-            namespace=ArticleNamespace.from_json(data.pop("namespace")),
-            titles=ArticleTitles.from_json(data.pop("titles")),
-            thumbnail=BasicImage.from_json(data.pop("thumbnail")),
-            originalimage=BasicImage.from_json(data.pop("thumbnail")),
-            lang=Language(data.pop("lang")),
-            dir=LanguageDirection(data.pop("dir")),
-            content_urls=ArticleURLs.from_json(data.pop("content_urls")),
-            **data
-        )
-
 
 class ArticleNamespace(JSONSerializeable):
     id: int
@@ -160,13 +131,6 @@ class ArticleNamespace(JSONSerializeable):
 class ViewShapshot(JSONSerializeable):
     date: datetime.date
     views: int
-
-    @classmethod
-    def from_json(cls, data: dict):
-        return cls(
-            date=datetime.date.fromisoformat(data.pop("date")),
-            **data
-        )
 
 
 class ArticleTitles(JSONSerializeable):
@@ -184,13 +148,6 @@ class MostRead(JSONSerializeable):
     "The date of the most read articles"
     articles: list[MostReadArticle]
     "A list of the 50 most read articles for this date"
-
-    @classmethod
-    def from_json(cls, data: dict):
-        return cls(
-            date=datetime.date.fromisoformat(data.pop("date")),
-            articles=[MostReadArticle.from_json(article) for article in data.pop("articles")]
-        )
 
 
 class BasicImage(JSONSerializeable):
@@ -215,6 +172,3 @@ class FeaturedContent(JSONSerializeable):
     image: FullImage
     "Picture of the day (via Commons)"
     news: News
-
-
-class TFA(JSONSerializeable):
