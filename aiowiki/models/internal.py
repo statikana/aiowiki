@@ -1,31 +1,35 @@
-from dataclasses import dataclass
 import datetime
-from enum import EnumMeta
 import logging
+from dataclasses import dataclass
+from enum import EnumMeta
 from types import NoneType
-from typing import Any, Callable, TypeVar, Union, get_args, get_origin
+from typing import TYPE_CHECKING, Any, Never, TypeVar, Union, get_args, get_origin
 
 from aiowiki.constants import PRIMITIVES
 from aiowiki.models.enums import PlatformType
 
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
 PlatformT = TypeVar("PlatformT", bound=PlatformType)
+ModelT = TypeVar("ModelT", bound="InterfaceModel")
 
 
 @dataclass(kw_only=True)
 class InterfaceModel:
     "Represents any object which is a model to the API's object"
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs: dict[str, Any]) -> None:
         for k, v in kwargs.items():
             setattr(self, k, v)  # hmm
 
     @classmethod
-    def from_json(cls, data: dict):
+    def from_json(cls: ModelT, data: dict) -> ModelT:
         logging.debug(
             f"BEGIN DESERIALIZATION [cls {cls.__name__}] FROM [keys {list(data)}]"
         )
 
-        constructed = dict()
+        constructed = {}
 
         for m_name, m_type in get_annotations(cls).items():
 
@@ -34,7 +38,7 @@ class InterfaceModel:
             is_option = is_optional(m_type)
 
             if is_option:
-                if data.get(m_name, None) is None:
+                if data.get(m_name) is None:
                     constructed[m_name] = None
                     continue
                 else:
@@ -74,10 +78,7 @@ class InterfaceModel:
                     f"{typ.__name__} ({typ.__class__}) in {cls.__name__} for attr {m_name}"
                 )
             try:
-                if is_option:
-                    value = data.get(m_name, None)
-                else:
-                    value = data[m_name]
+                value = data.get(m_name) if is_option else data[m_name]
             except KeyError as e:
                 logging.error(
                     f"KeyError: member {m_name} not found in {list(data.keys())} [cls {cls.__name__}]"
@@ -94,24 +95,24 @@ class InterfaceModel:
         )
         return cls(**constructed)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.__class__.__name__}({', '.join(f'{k}={v}' for k, v in self.__dict__.items())})"
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return self.__str__()
 
 
-def extract_typing(typed: Any):
+def extract_typing(typed: Any) -> type:
     return get_args(typed)[0]
 
 
-def is_optional(typed: Any):
+def is_optional(typed: Any) -> bool:
     return get_origin(typed) is Union and NoneType in get_args(typed)
 
 
-def get_annotations(cls: InterfaceModel):
+def get_annotations(cls: ModelT) -> dict[str, type]:
     if not hasattr(cls, "__annotations__"):
-        return dict()
+        return {}
     annotations = cls.__annotations__.copy()
     if hasattr(cls, "__mro__"):
         for parent in cls.__mro__:
@@ -123,5 +124,5 @@ def get_annotations(cls: InterfaceModel):
 
 class CustomDeserializer:
     @classmethod
-    def deserialize(cls, data: dict):
+    def deserialize(cls, data: dict) -> Never:
         raise NotImplementedError()

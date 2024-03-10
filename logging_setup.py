@@ -1,5 +1,5 @@
 import logging
 
 
-def setup():
+def setup() -> None:
     logging.getLogger().setLevel(logging.INFO)

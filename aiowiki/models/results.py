@@ -24,11 +24,11 @@ class Credit(InterfaceModel):
 class Artist(InterfaceModel):
     html: str
     "Artist name in HTML"
-    text: Optional[str]
+    text: str | None
     "Artist name in plain text, if available"
-    name: Optional[str]
+    name: str | None
     "Artist name"
-    user_page: Optional[str]
+    user_page: str | None
     "User page for the artist on Wikimedia Commons, if available"
 
 
@@ -37,13 +37,13 @@ class Thumbnail(InterfaceModel):
     "The MIME type of the image, e.g. image/jpeg or video/mp4"
     url: str
     "The URL of the image or video"
-    size: Optional[int] = None
+    size: int | None = None
     "The size of the image or video in bytes, or None if unknown"
-    width: Optional[int] = None
+    width: int | None = None
     "The width of the image or video in pixels, or None if unknown"
-    height: Optional[int] = None
+    height: int | None = None
     "The height of the image or video in pixels, or None if unknown"
-    duration: Optional[int] = None
+    duration: int | None = None
     "The duration of the video in seconds, or None if the media is an image"
 
 
@@ -96,11 +96,11 @@ class SearchPageResult(InterfaceModel):
     For search titles endpoint:
         Page title in reading-friendly format."""
 
-    matched_title: Optional[str] = None
+    matched_title: str | None = None
     "Title of the page redirected from, if the search term matched a redirect page, or None if search term did not match a redirect page"
-    description: Optional[str] = None
+    description: str | None = None
     "Short summary of the page or None if no description exists"
-    thumbnail: Optional[Thumbnail] = None
+    thumbnail: Thumbnail | None = None
     "Reduced-size version of the page's lead image or None if no lead image exists"
 
 
@@ -118,8 +118,8 @@ class ImageStructure(InterfaceModel):
     "A dictionary of image captions in various languages"
 
     @classmethod
-    def from_json(cls, data: dict):
-        captions = dict()
+    def from_json(cls: InterfaceModel, data: dict) -> InterfaceModel:
+        captions = {}
 
         for lang, caption in data["captions"].items():
             captions[Language(lang)] = caption
@@ -180,9 +180,9 @@ class ArticleMeta(InterfaceModel):
     "Article title in multiple formats"
     pageid: int
     "Article identifier"
-    thumbnail: Optional[BasicImage]
+    thumbnail: BasicImage | None
     "Reduced-size version of the article's lead image, if available"
-    originalimage: Optional[BasicImage]
+    originalimage: BasicImage | None
     "Original-size version of the article's lead image, if available"
     lang: Language
     "Language of the article"
@@ -194,10 +194,10 @@ class ArticleMeta(InterfaceModel):
     "Time-based UUID used for rendering content changes"
     timestamp: datetime.datetime
     "Time when the article was last edited"
-    description: Optional[str]
+    description: str | None
     "Short summary of the article, if available"
-    description_source: Optional[str]
-    """Source of the description: local for descriptions maintained within the 
+    description_source: str | None
+    """Source of the description: local for descriptions maintained within the
     page or central for descriptions imported from Wikidata"""
     content_urls: ArticleURLs
     "Article URLs"
