@@ -3,7 +3,7 @@ from httpx import AsyncClient
 
 from aiowiki.constants import BASE_URL
 from aiowiki.models.enums import EventType, Language, Project
-from aiowiki.models.results import FeaturedContent, SearchPageResult
+from aiowiki.models.results import FeaturedContent, OnThisDay, SearchPageResult, ArticleURLs
 
 
 class WikiClient:
@@ -14,7 +14,7 @@ class WikiClient:
         language: Language = Language.ENGLISH,
         proxy: str = None,
     ):
-        self._session = AsyncClient(proxy=proxy)
+        self._session = AsyncClient(proxy=proxy, timeout=10)
 
         self.project = project
         """The selected Wikimedia project for the client. You probably want Wikipedia (articles) or Commons (images, videos)."""
@@ -32,7 +32,7 @@ class WikiClient:
 class _WikiModule:
     def __init__(self, client: WikiClient, base: str):
         self._client = client
-        self.base = f"{BASE_URL}{base}"
+        self._base_url = f"{BASE_URL}{base}"
 
 
 class _CoreREST(_WikiModule):
@@ -51,7 +51,7 @@ class _CoreREST(_WikiModule):
             list[SearchPageResult]: A list of search results.
         """
         response = await self._client._session.get(
-            f"{self.base}/{self._client.project.value}/{self._client.language.value}/search/page",
+            f"{self._base_url}/{self._client.project.value}/{self._client.language.value}/search/page",
             params={"q": query, "limit": limit},
         )
         return list(
@@ -73,7 +73,7 @@ class _CoreREST(_WikiModule):
             list[SearchPageResult]: A list of search results.
         """
         response = await self._client._session.get(
-            f"{self.base}/{self.project.value}/{self.language.value}/search/title",
+            f"{self._base_url}/{self._client.project.value}/{self._client.language.value}/search/title",
             params={"q": query, "limit": limit},
         )
         return list(
@@ -96,12 +96,12 @@ class Feed(_WikiModule):
         """
         fmt_date = date.strftime("%Y/%m/%d")
         response = await self._client._session.get(
-            f"{self.base}/wikipedia/{self.language.value}/feed/featured/{fmt_date}",
+            f"{self._base_url}/wikipedia/{self._client.language.value}/featured/{fmt_date}",
         )
         return FeaturedContent.from_json(response.json())
 
     async def onthisday(
-        self, date: datetime.date = datetime.date, type: EventType = EventType.ALL
+        self, date: datetime.date = datetime.date.today(), type: EventType = EventType.ALL
     ):
         """
         Fetches the 'on this day' events for a given day and month.
@@ -113,8 +113,9 @@ class Feed(_WikiModule):
         URL:
             GET /wikipedia/{language}/onthisday/{type}/{MM}/{DD}
         """
-        fmt_date = date.strftime("%m/%d")
+        fmt_date = f"{str(date.month).rjust(2, '0')}/{str(date.day - 1).rjust(2, '0')}"
         response = await self._client._session.get(
-            f"{self.base}/wikipedia/{self.language.value}/feed/onthisday/{type.value}/{fmt_date}",
+            f"{self._base_url}/wikipedia/{self._client.language.value}/onthisday/{type.value}/{fmt_date}",
             params={"type": type.value},
         )
+        return OnThisDay.from_json(response.json()) 

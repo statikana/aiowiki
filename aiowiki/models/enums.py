@@ -22,15 +22,15 @@ class EventType(Enum):
     EVENTS = "events"
 
 
-class ArticleURLs(Enum):
-    DESKTOP = "desktop"
-    MOBILE = "mobile"
-
-
 class LanguageDirection(Enum):
     LTR = "ltr"
     RTL = "rtl"
 
+
+class PlatformType(Enum):
+    DESKTOP = "desktop"
+    MOBILE = "mobile"
+    
 
 class ArticleType(Enum):
     STANDARD = "standard"

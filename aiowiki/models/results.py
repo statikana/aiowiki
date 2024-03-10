@@ -1,8 +1,8 @@
 import datetime
-from typing import Optional
+from typing import Generic, Optional
 
-from aiowiki.models.enums import ArticleType, ArticleURLs, Language, LanguageDirection
-from aiowiki.models.internal import InterfaceModel
+from aiowiki.models.enums import ArticleType, Language, LanguageDirection, PlatformType
+from aiowiki.models.internal import InterfaceModel, PlatformT
 
 
 class BasicImage(InterfaceModel):
@@ -26,7 +26,7 @@ class Artist(InterfaceModel):
     "Artist name in HTML"
     text: Optional[str]
     "Artist name in plain text, if available"
-    name: str
+    name: Optional[str]
     "Artist name"
     user_page: Optional[str]
     "User page for the artist on Wikimedia Commons, if available"
@@ -148,8 +148,26 @@ class FullImage(InterfaceModel):
     "Image captions and tags"
 
 
-class Article(InterfaceModel):
-    "Represents an article"
+class PlatformArticle(InterfaceModel, Generic[PlatformT]):
+    page: str
+    "URL for the article"
+    revisions: str
+    "URL for the article's revision history"
+    edit: str
+    "URL for editing the article"
+    talk: str
+    "URL for the article's talk page"
+
+
+class ArticleURLs(InterfaceModel):
+    desktop: PlatformArticle[PlatformType.DESKTOP]
+    "Article URLs for desktop viewing"
+    mobile: PlatformArticle[PlatformType.MOBILE]
+    "Article URLs for mobile viewing"
+
+
+class ArticleMeta(InterfaceModel):
+    "Represents metadata of an article"
     type: ArticleType
     "Type of artcle"
     namespace: ArticleNamespace
@@ -160,10 +178,10 @@ class Article(InterfaceModel):
     "Article title in multiple formats"
     pageid: int
     "Article identifier"
-    thumbnail: BasicImage
-    "Reduced-size version of the article's lead image"
-    originalimage: BasicImage
-    "Original-size version of the article's lead image"
+    thumbnail: Optional[BasicImage]
+    "Reduced-size version of the article's lead image, if available"
+    originalimage: Optional[BasicImage]
+    "Original-size version of the article's lead image, if available"
     lang: Language
     "Language of the article"
     dir: LanguageDirection
@@ -172,11 +190,11 @@ class Article(InterfaceModel):
     "Revision identifier for the latest revision"
     tid: str
     "Time-based UUID used for rendering content changes"
-    timestamp: datetime
+    timestamp: datetime.datetime
     "Time when the article was last edited"
-    description: str
-    "Short summary of the article"
-    description_source: str
+    description: Optional[str]
+    "Short summary of the article, if available"
+    description_source: Optional[str]
     """Source of the description: local for descriptions maintained within the 
     page or central for descriptions imported from Wikidata"""
     content_urls: ArticleURLs
@@ -190,11 +208,11 @@ class Article(InterfaceModel):
 class News(InterfaceModel):
     story: str
     "Short summary of the story in HTML"
-    links: list[Article]
+    links: list[ArticleMeta]
     "Articles related to the story"
 
 
-class MostReadArticle(Article):
+class MostReadArticle(ArticleMeta):
     "Represents an article within the mostread section of featured content"
     views: int
     "Nunmber of views"
@@ -213,10 +231,37 @@ class MostRead(InterfaceModel):
 
 
 class FeaturedContent(InterfaceModel):
-    tfa: Article
+    "Represents the featured content for a given date"
+    tfa: ArticleMeta
     "Today's featured article"
     mostread: MostRead
     "Most read article yesterday"
     image: FullImage
     "Picture of the day (via Commons)"
-    news: News
+    news: list[News]
+
+
+class UndatedEvent(InterfaceModel):
+    """Describes someone's birth, death, or a notable event."""
+    text: str
+    "The description of the event"
+    pages: list[ArticleMeta]
+    "Articles related to the event"
+
+
+class DatedEvent(UndatedEvent):
+    year: int
+    "The year of the event"
+
+
+class OnThisDay(InterfaceModel):
+    selected: list[DatedEvent]
+    "Curated set of events that occurred on the given date"
+    births: list[DatedEvent]
+    "Notable people born on the given date"
+    deaths: list[DatedEvent]
+    "Notable people who died on the given date"
+    events: list[DatedEvent]
+    "Events that occurred on the given date that are not included in another type"
+    holidays: list[UndatedEvent]
+    "Fixed holidays celebrated on the given date "
