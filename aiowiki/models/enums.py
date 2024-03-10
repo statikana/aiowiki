@@ -27,7 +27,6 @@ class ArticleURLs(Enum):
     MOBILE = "mobile"
 
 
-
 class LanguageDirection(Enum):
     LTR = "ltr"
     RTL = "rtl"
