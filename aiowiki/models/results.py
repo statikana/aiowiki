@@ -244,7 +244,7 @@ class FeaturedContent(InterfaceModel):
 
 
 class UndatedEvent(InterfaceModel):
-    """Describes someone's birth, death, or a notable event."""
+    "Describes someone's birth, death, or a notable event."
 
     text: str
     "The description of the event"
