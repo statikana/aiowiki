@@ -74,7 +74,9 @@ class ArticleNamespace(InterfaceModel):
 
 class ViewShapshot(InterfaceModel):
     date: datetime.date
+    "Date of the view snapshot"
     views: int
+    "Number of views for the article on the given date"
 
 
 class SearchPageResult(InterfaceModel):
@@ -243,6 +245,7 @@ class FeaturedContent(InterfaceModel):
 
 class UndatedEvent(InterfaceModel):
     """Describes someone's birth, death, or a notable event."""
+
     text: str
     "The description of the event"
     pages: list[ArticleMeta]

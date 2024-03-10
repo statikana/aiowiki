@@ -21,12 +21,14 @@ class InterfaceModel:
 
     @classmethod
     def from_json(cls, data: dict):
-        logging.debug(f"BEGIN DESERIALIZATION [cls {cls.__name__}] FROM [keys {list(data)}]")
+        logging.debug(
+            f"BEGIN DESERIALIZATION [cls {cls.__name__}] FROM [keys {list(data)}]"
+        )
 
         constructed = dict()
 
         for m_name, m_type in get_annotations(cls).items():
-            
+
             method: Callable = None
 
             is_option = is_optional(m_type)
@@ -62,7 +64,7 @@ class InterfaceModel:
             # other standard uses
             elif issubclass(typ, datetime.datetime):
                 method = datetime.datetime.fromisoformat
-            
+
             elif issubclass(typ, datetime.date):
                 method = lambda string: datetime.date(*map(int, string[:-1].split("-")))
 
@@ -77,24 +79,27 @@ class InterfaceModel:
                 else:
                     value = data[m_name]
             except KeyError as e:
-                logging.error(f"KeyError: member {m_name} not found in {list(data.keys())} [cls {cls.__name__}]")
+                logging.error(
+                    f"KeyError: member {m_name} not found in {list(data.keys())} [cls {cls.__name__}]"
+                )
                 raise e
 
-            
             if is_array:
                 constructed[m_name] = [method(v) for v in value]
             else:
                 constructed[m_name] = method(value)
-        
-        logging.debug(f"CONSTRUCTED [{cls.__name__}] FROM [{list(data.keys())}] TO [{list(constructed.keys())}")
+
+        logging.debug(
+            f"CONSTRUCTED [{cls.__name__}] FROM [{list(data.keys())}] TO [{list(constructed.keys())}"
+        )
         return cls(**constructed)
-    
+
     def __str__(self):
         return f"{self.__class__.__name__}({', '.join(f'{k}={v}' for k, v in self.__dict__.items())})"
-    
+
     def __repr__(self):
         return self.__str__()
-    
+
 
 def extract_typing(typed: Any):
     return get_args(typed)[0]
@@ -102,6 +107,7 @@ def extract_typing(typed: Any):
 
 def is_optional(typed: Any):
     return get_origin(typed) is Union and NoneType in get_args(typed)
+
 
 def get_annotations(cls: InterfaceModel):
     if not hasattr(cls, "__annotations__"):

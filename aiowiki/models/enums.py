@@ -30,7 +30,7 @@ class LanguageDirection(Enum):
 class PlatformType(Enum):
     DESKTOP = "desktop"
     MOBILE = "mobile"
-    
+
 
 class ArticleType(Enum):
     STANDARD = "standard"

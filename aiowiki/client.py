@@ -3,7 +3,12 @@ from httpx import AsyncClient
 
 from aiowiki.constants import BASE_URL
 from aiowiki.models.enums import EventType, Language, Project
-from aiowiki.models.results import FeaturedContent, OnThisDay, SearchPageResult, ArticleURLs
+from aiowiki.models.results import (
+    FeaturedContent,
+    OnThisDay,
+    SearchPageResult,
+    ArticleURLs,
+)
 
 
 class WikiClient:
@@ -54,6 +59,7 @@ class _CoreREST(_WikiModule):
             f"{self._base_url}/{self._client.project.value}/{self._client.language.value}/search/page",
             params={"q": query, "limit": limit},
         )
+        response.raise_for_status()
         return list(
             SearchPageResult.from_json(result) for result in response.json()["pages"]
         )
@@ -76,6 +82,7 @@ class _CoreREST(_WikiModule):
             f"{self._base_url}/{self._client.project.value}/{self._client.language.value}/search/title",
             params={"q": query, "limit": limit},
         )
+        response.raise_for_status()
         return list(
             SearchPageResult.from_json(result) for result in response.json()["pages"]
         )
@@ -98,10 +105,13 @@ class Feed(_WikiModule):
         response = await self._client._session.get(
             f"{self._base_url}/wikipedia/{self._client.language.value}/featured/{fmt_date}",
         )
+        response.raise_for_status()
         return FeaturedContent.from_json(response.json())
 
     async def onthisday(
-        self, date: datetime.date = datetime.date.today(), type: EventType = EventType.ALL
+        self,
+        date: datetime.date = datetime.date.today(),
+        type: EventType = EventType.ALL,
     ):
         """
         Fetches the 'on this day' events for a given day and month.
@@ -118,4 +128,5 @@ class Feed(_WikiModule):
             f"{self._base_url}/wikipedia/{self._client.language.value}/onthisday/{type.value}/{fmt_date}",
             params={"type": type.value},
         )
-        return OnThisDay.from_json(response.json()) 
+        response.raise_for_status()
+        return OnThisDay.from_json(response.json())

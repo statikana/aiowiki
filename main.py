@@ -7,8 +7,9 @@ from logging_setup import setup
 
 async def main():
     wiki = aiowiki.WikiClient(proxy=PROXY)
-    otd = await wiki.feed.onthisday()
-    print(otd.births)
+    articles = await wiki.core.search_content("Python", limit=1)
+    print(articles[0].title)
+
 if __name__ == "__main__":
     setup()
     asyncio.run(main())
