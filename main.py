@@ -7,8 +7,9 @@ from logging_setup import setup
 
 async def main():
     wiki = aiowiki.WikiClient(proxy=PROXY)
-    articles = await wiki.core.search_content("Python", limit=1)
-    print(articles[0].title)
+    articles = await wiki._project("Python", limit=1)
+    print([a.title for a in articles])
+
 
 if __name__ == "__main__":
     setup()

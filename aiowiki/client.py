@@ -21,10 +21,10 @@ class WikiClient:
     ):
         self._session = AsyncClient(proxy=proxy, timeout=10)
 
-        self.project = project
+        self._project = project
         """The selected Wikimedia project for the client. You probably want Wikipedia (articles) or Commons (images, videos)."""
 
-        self.language = language
+        self._language = language
         """The selected language for the client. This is not used in multilingual projects, such as the Commons."""
 
         self.core = _CoreREST(self, "/core/v1")
@@ -32,6 +32,22 @@ class WikiClient:
 
         self.feed = Feed(self, "/feed/v1")
         """Module for interacting with Wikimedia's 'Feed' API."""
+
+    @property.getter
+    def project(self):
+        return self._project
+
+    @property.setter
+    def project(self, value: Project):
+        self._project = value
+
+    @property.getter
+    def language(self):
+        return self._language
+
+    @property.setter
+    def language(self, value: Language):
+        self._language = value
 
 
 class _WikiModule:
@@ -56,7 +72,7 @@ class _CoreREST(_WikiModule):
             list[SearchPageResult]: A list of search results.
         """
         response = await self._client._session.get(
-            f"{self._base_url}/{self._client.project.value}/{self._client.language.value}/search/page",
+            f"{self._base_url}/{self._client._project.value}/{self._client._language.value}/search/page",
             params={"q": query, "limit": limit},
         )
         response.raise_for_status()
@@ -79,7 +95,7 @@ class _CoreREST(_WikiModule):
             list[SearchPageResult]: A list of search results.
         """
         response = await self._client._session.get(
-            f"{self._base_url}/{self._client.project.value}/{self._client.language.value}/search/title",
+            f"{self._base_url}/{self._client._project.value}/{self._client._language.value}/search/title",
             params={"q": query, "limit": limit},
         )
         response.raise_for_status()
@@ -103,7 +119,7 @@ class Feed(_WikiModule):
         """
         fmt_date = date.strftime("%Y/%m/%d")
         response = await self._client._session.get(
-            f"{self._base_url}/wikipedia/{self._client.language.value}/featured/{fmt_date}",
+            f"{self._base_url}/wikipedia/{self._client._language.value}/featured/{fmt_date}",
         )
         response.raise_for_status()
         return FeaturedContent.from_json(response.json())
@@ -125,7 +141,7 @@ class Feed(_WikiModule):
         """
         fmt_date = f"{str(date.month).rjust(2, '0')}/{str(date.day - 1).rjust(2, '0')}"
         response = await self._client._session.get(
-            f"{self._base_url}/wikipedia/{self._client.language.value}/onthisday/{type.value}/{fmt_date}",
+            f"{self._base_url}/wikipedia/{self._client._language.value}/onthisday/{type.value}/{fmt_date}",
             params={"type": type.value},
         )
         response.raise_for_status()
