@@ -7,9 +7,8 @@ from logging_setup import setup
 
 async def main() -> None:
     wiki = aiowiki.WikiClient(proxy=PROXY)
-    articles = await wiki.core.search_content("Python", limit=1)
-    print([a.title for a in articles])
-
+    file = await wiki.core.get_file("The_Blue_Marble.jpg")
+    print(file.original.url)
 
 if __name__ == "__main__":
     setup()

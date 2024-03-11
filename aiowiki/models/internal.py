@@ -1,9 +1,9 @@
 import datetime
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import EnumMeta
-from types import NoneType
-from typing import TYPE_CHECKING, Any, Never, TypeVar, Union, get_args, get_origin
+from types import NoneType, UnionType
+from typing import TYPE_CHECKING, Any, Never, TypeVar, get_args, get_origin
 
 from aiowiki.constants import PRIMITIVES
 from aiowiki.models.enums import PlatformType
@@ -19,12 +19,14 @@ ModelT = TypeVar("ModelT", bound="InterfaceModel")
 class InterfaceModel:
     "Represents any object which is a model to the API's object"
 
+    __prefix_schema__: dict[str, str] = field(default_factory=lambda: {})
+
     def __init__(self, **kwargs: dict[str, Any]) -> None:
         for k, v in kwargs.items():
             setattr(self, k, v)  # hmm
 
     @classmethod
-    def from_json(cls: ModelT, data: dict) -> ModelT:
+    def _from_json(cls: ModelT, data: dict) -> ModelT:
         logging.debug(
             f"BEGIN DESERIALIZATION [cls {cls.__name__}] FROM [keys {list(data)}]"
         )
@@ -63,14 +65,15 @@ class InterfaceModel:
 
             # another InterfaceModel
             elif issubclass(typ, InterfaceModel):
-                method = typ.from_json
+                method = typ._from_json
 
             # other standard uses
             elif issubclass(typ, datetime.datetime):
                 method = datetime.datetime.fromisoformat
 
             elif issubclass(typ, datetime.date):
-                method = lambda string: datetime.date(*map(int, string[:-1].split("-")))
+                def method(string):
+                    return datetime.date(*map(int, string[:-1].split("-")))
 
             else:
                 raise ValueError(
@@ -84,6 +87,9 @@ class InterfaceModel:
                     f"KeyError: member {m_name} not found in {list(data.keys())} [cls {cls.__name__}]"
                 )
                 raise e
+            
+            if m_name in getattr(cls, "__prefix_schema__", {}):
+                value = cls.__prefix_schema__[m_name] + value
 
             if is_array:
                 constructed[m_name] = [method(v) for v in value]
@@ -107,7 +113,7 @@ def extract_typing(typed: Any) -> type:
 
 
 def is_optional(typed: Any) -> bool:
-    return get_origin(typed) is Union and NoneType in get_args(typed)
+    return get_origin(typed) is UnionType and NoneType in get_args(typed)
 
 
 def get_annotations(cls: ModelT) -> dict[str, type]:
@@ -118,8 +124,7 @@ def get_annotations(cls: ModelT) -> dict[str, type]:
         for parent in cls.__mro__:
             if hasattr(parent, "__annotations__"):
                 annotations.update(parent.__annotations__)
-
-    return annotations
+    return {k:v for k, v in annotations.items() if not k.startswith("_")}
 
 
 class CustomDeserializer:

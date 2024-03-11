@@ -1,7 +1,7 @@
 import datetime
-from typing import Generic, Optional
+from typing import Generic
 
-from aiowiki.models.enums import ArticleType, Language, LanguageDirection, PlatformType
+from aiowiki.models.enums import ArticleType, Language, LanguageDirection, MediaType, PlatformType
 from aiowiki.models.internal import InterfaceModel, PlatformT
 
 
@@ -32,7 +32,7 @@ class Artist(InterfaceModel):
     "User page for the artist on Wikimedia Commons, if available"
 
 
-class Thumbnail(InterfaceModel):
+class EmbeddedImage(InterfaceModel):
     mimetype: str
     "The MIME type of the image, e.g. image/jpeg or video/mp4"
     url: str
@@ -45,6 +45,55 @@ class Thumbnail(InterfaceModel):
     "The height of the image or video in pixels, or None if unknown"
     duration: int | None = None
     "The duration of the video in seconds, or None if the media is an image"
+
+    __prefix_schema__ = {
+        "url": "https:"
+    }
+
+
+class Image(InterfaceModel):
+    mediatype: MediaType
+    "File type"
+    size: int | None
+    "File size in bytes"
+    width: int | None
+    "Image width in pixels"
+    height: int | None
+    "Image height in pixels"
+    duration: int | None
+    "Duration of the video, audio, or multimedia file "
+    url: str
+    "URL to download the image"
+
+
+class User(InterfaceModel):
+    id: int
+    name: str
+
+
+class RevisionMeta(InterfaceModel):
+    timestamp: datetime.datetime
+    user: User
+    "Note: This is inconsistent with the API documentation. In the documentation, this is `id`"
+
+
+class File(InterfaceModel):
+    title: str
+    "File title"
+    file_description_url: str
+    "URL for the page describing the file, including license information and other metadata"
+    latest: RevisionMeta
+    "Object containing information about the latest revision to the file"
+    preferred: Image
+    "Information about the file's preferred preview format"
+    original: Image
+    "Information about the file's original format"
+    thumbnail: Image | None
+    "get_file only: Information about the file's thumbnail format"
+
+    __prefix_schema__ = {
+        "file_description_url": "https:"
+    }
 
 
 class License(InterfaceModel):
@@ -100,7 +149,7 @@ class SearchPageResult(InterfaceModel):
     "Title of the page redirected from, if the search term matched a redirect page, or None if search term did not match a redirect page"
     description: str | None = None
     "Short summary of the page or None if no description exists"
-    thumbnail: Thumbnail | None = None
+    thumbnail: EmbeddedImage | None = None
     "Reduced-size version of the page's lead image or None if no lead image exists"
 
 
@@ -118,7 +167,7 @@ class ImageStructure(InterfaceModel):
     "A dictionary of image captions in various languages"
 
     @classmethod
-    def from_json(cls: InterfaceModel, data: dict) -> InterfaceModel:
+    def _from_json(cls: InterfaceModel, data: dict) -> InterfaceModel:
         captions = {}
 
         for lang, caption in data["captions"].items():

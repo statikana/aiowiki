@@ -43,6 +43,20 @@ class ArticleType(Enum):
     "A wiki's homepage"
 
 
+class MediaType(Enum):
+    BITMAP = "BITMAP"
+    DRAWING = "DRAWING"
+    AUDIO = "AUDIO"
+    VIDEO = "VIDEO"
+    MULTIMEDIA = "MULTIMEDIA"
+    UNKNOWN = "UNKNOWN"
+    OFFICE = "OFFICE"
+    TEXT = "TEXT"
+    EXECUTABLE = "EXECUTABLE"
+    ARCHIVE = "ARCHIVE"
+    _3D = "3D"
+
+
 class Language(Enum):
     ABKHAZIAN = "ab"
     AFAR = "aa"
