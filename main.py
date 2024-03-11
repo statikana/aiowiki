@@ -1,13 +1,13 @@
 import asyncio
 
-import aiowiki
+import awiki
 from env import PROXY
 from logging_setup import setup
 
 
 async def main() -> None:
-    wiki = aiowiki.WikiClient(proxy=PROXY)
-    file = await wiki.core.get_file("The_Blue_Marble.jpg")
+    wiki = awiki.WikiClient(proxy=PROXY)
+    file = await wiki.core.get_file("Person.jpg")
     print(file.original.url)
 
 if __name__ == "__main__":

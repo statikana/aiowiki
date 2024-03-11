@@ -1,8 +1,8 @@
 import datetime
 from typing import Generic
 
-from aiowiki.models.enums import ArticleType, Language, LanguageDirection, MediaType, PlatformType
-from aiowiki.models.internal import InterfaceModel, PlatformT
+from awiki.models.enums import ArticleType, Language, LanguageDirection, MediaType, PlatformType
+from awiki.models.internal import InterfaceModel, PlatformT
 
 
 class BasicImage(InterfaceModel):

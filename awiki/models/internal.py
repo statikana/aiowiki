@@ -5,8 +5,8 @@ from enum import EnumMeta
 from types import NoneType, UnionType
 from typing import TYPE_CHECKING, Any, Never, TypeVar, get_args, get_origin
 
-from aiowiki.constants import PRIMITIVES
-from aiowiki.models.enums import PlatformType
+from awiki.constants import PRIMITIVES
+from awiki.models.enums import PlatformType
 
 if TYPE_CHECKING:
     from collections.abc import Callable

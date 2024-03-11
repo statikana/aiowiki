@@ -2,9 +2,9 @@ import datetime
 
 from httpx import AsyncClient
 
-from aiowiki.constants import BASE_URL
-from aiowiki.models.enums import EventType, Language, Project
-from aiowiki.models.results import (
+from awiki.constants import BASE_URL
+from awiki.models.enums import EventType, Language, Project
+from awiki.models.results import (
     FeaturedContent,
     File,
     OnThisDay,
