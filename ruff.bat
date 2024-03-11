@@ -1,1 +1,1 @@
-python -m ruff check --unsafe-fixes --fix  .
+python -m ruff check --fix  .

@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "awiki"
+version = "1.0.1"
+description = "A basic asynchronous wrapper for the WikiMedia API"
+authors = [
+    "statikana <contact@statikana.dev>"
+]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+httpx = "^0.27.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
