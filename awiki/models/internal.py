@@ -30,30 +30,26 @@ class InterfaceModel:
         logging.debug(
             f"BEGIN DESERIALIZATION [cls {cls.__name__}] FROM [keys {list(data)}]"
         )
-
+        
         constructed = {}
 
         for m_name, m_type in get_annotations(cls).items():
-
             method: Callable = None
 
-            is_option = is_optional(m_type)
+            typ: type = m_type
 
-            if is_option:
-                if data.get(m_name) is None:
+            primary_is_array = get_origin(typ) in (list, tuple)
+            primary_is_option = is_optional(typ)
+
+            if data.get(m_name) is None:
+                if primary_is_option:
                     constructed[m_name] = None
                     continue
                 else:
-                    typ = extract_typing(m_type)
-            else:
-                typ = m_type
+                    raise ValueError(f"In attr {m_name} of {cls.__name__}, data received is None but expected structure {typ}.")
 
-            is_array = get_origin(typ) in (list, tuple)
-            if is_array:
-                typ = extract_typing(m_type)
-
-            while (ori := get_origin(typ)) is not None:
-                typ = ori
+            while typ != (extracted := extract_typing(typ)):
+                typ = extracted
 
             # call the type directly to construct
             if typ in PRIMITIVES or issubclass(typ.__class__, EnumMeta):
@@ -80,18 +76,20 @@ class InterfaceModel:
                     f"unimplemented deserialization source: "
                     f"{typ.__name__} ({typ.__class__}) in {cls.__name__} for attr {m_name}"
                 )
-            try:
-                value = data.get(m_name) if is_option else data[m_name]
-            except KeyError as e:
-                logging.error(
-                    f"KeyError: member {m_name} not found in {list(data.keys())} [cls {cls.__name__}]"
-                )
-                raise e
+            
+            value = data.get(m_name)
+
+            if value is None:
+                if primary_is_option:
+                    constructed[m_name] = None
+                    continue
+                else:
+                    raise ValueError(f"expected a value in {m_name} of {cls.__name__} of type {m_type}, got None.")
             
             if m_name in getattr(cls, "__prefix_schema__", {}):
                 value = cls.__prefix_schema__[m_name] + value
-
-            if is_array:
+                
+            if primary_is_array:
                 constructed[m_name] = [method(v) for v in value]
             else:
                 constructed[m_name] = method(value)
@@ -108,9 +106,13 @@ class InterfaceModel:
         return self.__str__()
 
 
-def extract_typing(typed: Any) -> type:
-    return get_args(typed)[0]
-
+def extract_typing(typed: Any, safe: bool = True) -> type:
+    try:
+        return get_args(typed)[0]
+    except (TypeError, IndexError) as e:
+        if safe:
+            return typed
+        raise TypeError(f"expected a typing object, got {typed}") from e
 
 def is_optional(typed: Any) -> bool:
     return get_origin(typed) is UnionType and NoneType in get_args(typed)

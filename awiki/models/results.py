@@ -151,7 +151,7 @@ class SearchPageResult(InterfaceModel):
     "Short summary of the page or None if no description exists"
     thumbnail: EmbeddedImage | None = None
     "Reduced-size version of the page's lead image or None if no lead image exists"
-
+    
 
 class ArticleTitles(InterfaceModel):
     canonical: str
@@ -307,13 +307,24 @@ class DatedEvent(UndatedEvent):
 
 
 class OnThisDay(InterfaceModel):
-    selected: list[DatedEvent]
-    "Curated set of events that occurred on the given date"
-    births: list[DatedEvent]
-    "Notable people born on the given date"
-    deaths: list[DatedEvent]
-    "Notable people who died on the given date"
-    events: list[DatedEvent]
-    "Events that occurred on the given date that are not included in another type"
-    holidays: list[UndatedEvent]
-    "Fixed holidays celebrated on the given date "
+    selected: list[DatedEvent] | None = None
+    """Curated set of events that occurred on the given date. 
+    Will be None if the event type used in `WikiClient.feed.onthisday` 
+    is not `EventType.ALL` or `EventType.SELECTED`."""
+    births: list[DatedEvent] | None = None
+    """Notable people who were born on the given date.
+    Will be None if the event type used in `WikiClient.feed.onthisday` 
+    is not `EventType.ALL` or `EventType.BIRTHS`."""
+    deaths: list[DatedEvent] | None = None
+    """Notable people who died on the given date.
+    Will be None if the event type used in `WikiClient.feed.onthisday`
+    is not `EventType.ALL` or `EventType.DEATHS`."""
+    events: list[DatedEvent] | None = None
+    """Notable events that occurred on the given date which were not
+    included in any other category (e.g. births, deaths, holidays).
+    Will be None if the event type used in `WikiClient.feed.onthisday`
+    is not `EventType.ALL` or `EventType.EVENTS`."""
+    holidays: list[UndatedEvent] | None = None
+    """Fixed-date holidays that occur on the given date.
+    Will be None if the event type used in `WikiClient.feed.onthisday`
+    is not `EventType.ALL` or `EventType.HOLIDAYS`."""

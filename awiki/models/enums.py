@@ -3,14 +3,14 @@ from enum import Enum
 
 class Project(Enum):
     WIKIPEDIA = "wikipedia"
-    # WIKTIONARY = "wiktionary"
-    # WIKIQUOTE = "wikiquote"
-    # WIKIVOYAGE = "wikivoyage"
-    # WIKIBOOKS = "wikibooks"
-    # WIKISOURCE = "wikisource"
-    # WIKIVERSITY = "wikiversity"
-    # COMMONS = "commons"
-    # WIKISPECIES = "wikispecies"
+    WIKTIONARY = "wiktionary"
+    WIKIQUOTE = "wikiquote"
+    WIKIVOYAGE = "wikivoyage"
+    WIKIBOOKS = "wikibooks"
+    WIKISOURCE = "wikisource"
+    WIKIVERSITY = "wikiversity"
+    COMMONS = "commons"
+    WIKISPECIES = "wikispecies"
 
 
 class EventType(Enum):

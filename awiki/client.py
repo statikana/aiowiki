@@ -25,9 +25,11 @@ class WikiClient:
         """Creates a new WikiClient instance.
 
         Args:
-            project (Project): The selected Wikimedia project for the client. You probably want Wikipedia (articles) or Commons (images, videos).
-            language (Language): The selected language for the client. This is not used in multilingual projects, such as the Commons.
-            proxy (str): Optional. The proxy to use for making requests. Defaults to None.
+            project (Project): The selected Wikimedia project for the client. You probably want Wikipedia 
+                               (articles) or Commons (images, videos). Defaults to Project.WIKIPEDIA.
+            language (Language): The selected language for the client. This is not used in multilingual 
+                                 projects, such as the Commons. Defaults to Language.ENGLISH.
+            proxy (str):  The proxy to use for making requests. Defaults to None.
         """
         self._session = AsyncClient(proxy=proxy)
 
@@ -94,7 +96,7 @@ class _Core(_WikiModule):
 
     async def search_titles(self, query: str, /, *, limit: int = 10) -> list[SearchPageResult]:
         """
-        Searches wiki page titles, and returns pages witmm.h titles that begin with the provided search terms. 
+        Searches wiki page titles, and returns pages with titles that begin with the provided search terms. 
         You can use this endpoint as an autocomplete search that automatically suggests relevant pages by title. 
 
         Args:
@@ -112,6 +114,7 @@ class _Core(_WikiModule):
             params={"q": query, "limit": limit},
         )
         response.raise_for_status()
+
         return [
             SearchPageResult._from_json(result) for result in response.json()["pages"]
         ]
@@ -165,22 +168,22 @@ class _Feed(_WikiModule):
     async def onthisday(
         self,
         date: datetime.date = datetime.date.today(),
-        type: EventType = EventType.ALL,
+        typ: EventType = EventType.ALL,
     ) -> OnThisDay:
         """
         Fetches the 'on this day' events for a given day and month.
 
         Args:
             date (datetime.date): The date to fetch events for. The 'year' component of the date is ignored. Defaults to today.
-            type (EventType): The type of events to fetch. Defaults to EventType.all.
+            typ (EventType): The type of events to fetch. Defaults to EventType.all.
 
         Path:
-            GET /wikipedia/{language}/onthisday/{type}/{MM}/{DD}
+            GET /wikipedia/{language}/onthisday/{typ}/{MM}/{DD}
         """
         fmt_date = f"{str(date.month).rjust(2, '0')}/{str(date.day - 1).rjust(2, '0')}"
         response = await self._client._session.get(
-            f"{self._base_url}/wikipedia/{self._client._language.value}/onthisday/{type.value}/{fmt_date}",
-            params={"type": type.value},
+            f"{self._base_url}/wikipedia/{self._client._language.value}/onthisday/{typ.value}/{fmt_date}",
+            params={"type": typ.value},
         )
         response.raise_for_status()
         return OnThisDay._from_json(response.json())

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "awiki"
-version = "1.0.1"
+version = "1.0.3"
 description = "A basic asynchronous wrapper for the WikiMedia API"
 authors = [
     "statikana <contact@statikana.dev>"
